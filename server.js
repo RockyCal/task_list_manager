@@ -21,6 +21,7 @@ class Server extends EventEmitter {
 				case 'help':
 				case 'add':
 				case 'ls':
+				case 'complete':
 				case 'delete':
 					this[command](args);
 					break;
@@ -39,7 +40,7 @@ class Server extends EventEmitter {
 
 	add(args) {
 		this.currentTaskId++;
-		this.taskList.push(new Task(this.currentTaskId, args.join(' ')))
+		this.taskList.push(new Task(this.currentTaskId, args))
 		this.emit('response', `Added task ${this.currentTaskId}`);
 	}
 
@@ -49,11 +50,26 @@ class Server extends EventEmitter {
 	}
 
 	delete(args) {
+		if (this.taskList.length === 0){
+			this.emit('response', 'Task list is empty!');
+			return;
+		}
 		var index = this.taskList.findIndex(t => t.text === args)
-		this.taskList.splice(index - 1, 1)
-		this.emit('response', `Deleted task ${args[0]}`);
+		if (index === -1) {
+			this.emit('response', `Task ${args} not found.`);
+			return;
+		}
+		this.taskList.splice(index, 1)
+		this.emit('response', `Deleted task ${args}`);
 		this.currentTaskId--;
 		this.taskList.map(t => t.id = this.taskList.indexOf(t) + 1);
+	}
+
+	complete(args) {
+		var index = this.taskList.findIndex(t => t.text === args);
+		var task = this.taskList[index];
+		task.text = `--${task.text}--`
+		this.emit('response', `Completed task ${task.text}`)
 	}
 }
 

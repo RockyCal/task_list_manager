@@ -17,5 +17,5 @@ server.on('response', (resp) => {
 let command, args;
 rl.on('line', (input) => {
 	[command, ...args] = input.split(' ')
-	client.emit('command', command, args)
+	client.emit('command', command, args.join(' '))
 })
